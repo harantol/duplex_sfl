@@ -1,7 +1,7 @@
 # Le Duplex — site web
 
 Site statique d'une page présentant Le Duplex, mini duplex dans un chalet à
-Saint-François-Longchamp, en Savoie (location Airbnb).
+Saint-François-Longchamp, en Savoie (location Airbnb et Booking.com).
 Créé à partir du site de Dar Luce (`harantol/dar_luce`).
 HTML, CSS et JavaScript purs : aucune dépendance, aucune étape de build.
 
