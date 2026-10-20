@@ -1,8 +1,8 @@
 """Télécharge les calendriers iCal des annonces (Airbnb, Booking.com) et n'en
 publie que les plages de dates indisponibles, dans data/availability.json.
 
-Les adresses sont lues dans les variables d'environnement AIRBNB_ICAL_URL
-(obligatoire) et BOOKING_ICAL_URL (facultative). Ni ces adresses ni le contenu
+Les adresses sont lues dans les variables d'environnement AIRBNB_ICAL_URL et
+BOOKING_ICAL_URL ; il en faut au moins une. Ni ces adresses ni le contenu
 brut des calendriers (qui contient des détails de réservation) ne sont écrits
 ou affichés.
 """
@@ -14,10 +14,10 @@ import sys
 import urllib.request
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "..", "data", "availability.json")
-# (variable d'environnement, nom affiché, obligatoire)
+# (variable d'environnement, nom affiché)
 SOURCES = [
-    ("AIRBNB_ICAL_URL", "Airbnb", True),
-    ("BOOKING_ICAL_URL", "Booking.com", False),
+    ("AIRBNB_ICAL_URL", "Airbnb"),
+    ("BOOKING_ICAL_URL", "Booking.com"),
 ]
 DATE_LINE = re.compile(r"^(DTSTART|DTEND)[^:]*:(\d{8})")
 
@@ -71,17 +71,18 @@ def download(url, name):
 def main():
     # Si une source configurée échoue, on garde le fichier précédent tel quel :
     # mieux vaut un calendrier en retard qu'un calendrier qui oublie des réservations.
-    ranges = []
-    for variable, name, required in SOURCES:
+    ranges, configured = [], 0
+    for variable, name in SOURCES:
         url = os.environ.get(variable, "").strip()
         if not url:
-            if required:
-                sys.exit("%s n'est pas défini (secret du dépôt manquant)." % variable)
             print("%s : non configuré, ignoré." % name)
             continue
+        configured += 1
         found = parse_ranges(download(url, name))
         print("%s : %d événement(s)." % (name, len(found)))
         ranges.extend(found)
+    if not configured:
+        sys.exit("Aucun calendrier configuré : ajoutez le secret AIRBNB_ICAL_URL ou BOOKING_ICAL_URL.")
 
     today = datetime.date.today()
     booked = [
